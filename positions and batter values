@@ -1,0 +1,79 @@
+SELECT *
+FROM rays2022positions
+
+/* shows combined WAR of players on the team in 2022 grouped by country */
+SELECT Country, ROUND(SUM(WAR),2) as CombinedWAR
+FROM rays2022positions
+GROUP BY Country
+
+/* shows combined WAR of players on the team in 2022 grouped by country, as well as amount of players from said country */
+SELECT Country, COUNT(Country) AS TotalPlayers, ROUND(SUM(WAR),2) AS CombinedWAR
+FROM rays2022positions
+GROUP BY Country
+ORDER BY CombinedWAR DESC
+
+/* shows combined WAR of pitchers on the team in 2022 grouped by country, as well as amount of players from said country */
+SELECT Country, COUNT(Country) AS TotalPitchers, ROUND(SUM(WAR),2) AS CombinedWARPitcher
+FROM rays2022positions
+WHERE P > 0
+GROUP BY Country
+ORDER BY CombinedWARPitcher DESC
+
+/* updating two data points (excel data was incorrect) */
+UPDATE rays2022positions
+SET FirstName = 'Rene'
+WHERE LastName = 'Pinto'
+
+UPDATE rays2022battervalues
+SET FirstName = 'Ji-Man'
+WHERE LastName = 'Choi'
+
+/*joining tables to show only the players with a plate appearance in 2022 (pos table included all players(pitchers) that played in 2022)*/
+SELECT *
+FROM rays2022positions pos
+	RIGHT JOIN rays2022battervalues bv
+    ON pos.FirstName = bv.FirstName AND pos.LastName = bv.LastName
+   
+ /*showing Rays in 2022 that were above average according to WAR (2.0 WAR = average MLB starter) */
+SELECT pos.FirstName, pos.LastName, pos.Age, bv.WAR, bv.Acquired
+FROM rays2022positions pos
+	RIGHT JOIN rays2022battervalues bv
+    ON pos.FirstName = bv.FirstName AND pos.LastName = bv.LastName
+WHERE bv.WAR >= 2.0
+ORDER BY bv.WAR DESC
+
+/*showing WAR by age with count of number of players */
+SELECT pos.Age, ROUND(SUM(pos.WAR),2) as CombinedWARbyAge, COUNT(pos.Age) as NumberPlayers
+FROM rays2022positions pos
+	RIGHT JOIN rays2022battervalues bv
+    ON pos.FirstName = bv.FirstName AND pos.LastName = bv.LastName
+GROUP BY pos.Age
+ORDER BY CombinedWARbyAge DESC
+
+/*Grouping acquisition method together and seeing combined WAR and number of players */ 
+SELECT bv.Acquired, ROUND(SUM(pos.WAR),2) as CombinedWAR, COUNT(Acquired) as NumberOfPlayers
+FROM rays2022positions pos
+	RIGHT JOIN rays2022battervalues bv
+    ON pos.FirstName = bv.FirstName AND pos.LastName = bv.LastName
+GROUP BY Acquired
+ORDER BY CombinedWAR DESC
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
