@@ -1,0 +1,77 @@
+/* showing away games that did not go into extra innings, ordered by game length in time (descending) */
+SELECT *
+FROM rays2022schedule
+WHERE HomeAway = '@' AND Inn < 10
+ORDER BY Time DESC
+
+/* showing all weekend games */
+SELECT *
+FROM rays2022schedule
+WHERE DayOfWeek LIKE 'Saturday' OR DayOfWeek LIKE 'Sunday'
+
+/*showing results on weekend games*/
+SELECT DayOfWeek, Result, COUNT(Result)
+FROM rays2022schedule
+WHERE DayOfWeek LIKE 'Saturday' OR DayOfWeek LIKE 'Sunday'
+GROUP BY Result, DayOfWeek
+
+/*showing results on weekday games*/
+SELECT DayOfWeek, Result, COUNT(Result) AS NumberOfWinLoss
+FROM rays2022schedule
+WHERE DayOfWeek IN ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday')
+GROUP BY Result, DayOfWeek
+ORDER BY DayOfWeek, Result DESC
+
+/*showing games that were either won by McClanahan, or lost by Yarbrough, ordered by month */
+SELECT DayOfWeek, Month, Day, Result, Win, Loss, COUNT(Result) OVER (PARTITION BY Result) as TotalResult
+FROM rays2022schedule
+WHERE Win = 'McClanahan' 
+   OR Loss = 'Yarbrough'
+ORDER BY Month
+
+/*showing McClanahan wins grouped by day of week, ordered most to fewest */
+SELECT DayOfWeek, Result, Win, COUNT(Result) as TotalWins
+FROM rays2022schedule
+WHERE Win = 'McClanahan' 
+GROUP BY DayOfWeek, Result, Win
+ORDER BY TotalWins DESC
+
+/*showing Rays results when attendance is at or below league average attendance in 2022 (26,808/gm) by month */
+SELECT Month, Result, Count(Result)
+FROM rays2022schedule
+WHERE Attendance <= 26808
+GROUP BY Month, Result
+ORDER BY Result DESC
+
+/*showing Rays results when attendance is at or below league average attendance in 2022 (26,808/gm) */
+SELECT Result, Count(Result)
+FROM rays2022schedule
+WHERE Attendance <= 26808
+GROUP BY Result
+ORDER BY Result DESC
+
+/*showing Rays results when attendance is above league average attendance in 2022 (26,808/gm) */
+SELECT Result, Count(Result)
+FROM rays2022schedule
+WHERE Attendance > 26808
+GROUP BY Result
+ORDER BY Result DESC
+
+/*showing Rays record within AL East (Bos, NYY, Bal, Tor) */
+SELECT Result, Opp, COUNT(Result)
+FROM rays2022schedule
+Where Opp IN ('BAL', 'BOS', 'NYY', 'TOR')
+GROUP BY Opp, Result
+ORDER BY Opp, Result DESC
+
+
+
+
+
+
+
+
+
+
+
+
