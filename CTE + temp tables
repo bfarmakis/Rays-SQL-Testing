@@ -65,3 +65,37 @@ FROM rays2022teampitching pit
 	JOIN rays2022pitchervalues pval
 		ON pit.FirstName = pval.FirstName AND pit.LastName = pval.LastName
 
+/* creating temp table to display array of relevant batting stats, querying by grouping into positions */
+
+CREATE TEMPORARY TABLE temp_batting (
+FirstName varchar(100),
+LastName varchar(100),
+Age int,
+Pos varchar(100),
+Country varchar(100),
+GamesPlayed int,
+Hits int,
+Doubles int,
+HomeRuns int,
+RBI int,
+Walks int,
+Strikeouts int,
+BattingAverage double,
+OPS double,
+WAR double
+)
+
+INSERT INTO temp_batting
+SELECT bat.FirstName, bat.LastName, bat.age, bat.pos, pos.Country, bat.G, bat.H, bat.2B, bat.HR, bat.RBI, bat.BB, bat.SO, bat.BA, bat.OPS, pos.WAR
+FROM rays2022teambatting bat
+	JOIN rays2022positions pos
+		ON bat.FirstName = pos.FirstName AND bat.LastName = pos.LastName
+
+SELECT Pos, ROUND(AVG(Age),1) as AvgAge, ROUND(AVG(GamesPlayed),1) AS AvgGames, ROUND(AVG(Hits),1) AS AvgHits, 
+ROUND(AVG(RBI),1) AS AvgRBI, ROUND(AVG(OPS),3) AS AvgOPS, ROUND(AVG(WAR),2) AS AvgWAR,
+COUNT(Pos) AS Players, MIN(Age) AS YoungestPlayer, MAX(Age) AS OldestPlayer
+FROM temp_batting
+GROUP BY Pos
+ORDER BY AvgWAR DESC
+
+
