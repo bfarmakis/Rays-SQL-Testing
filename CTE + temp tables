@@ -1,0 +1,67 @@
+/* setting up CTE */
+SELECT pit.FirstName, pit.LastName, pos.Country, pit.Age, pit.ERA, pit.FIP, pit.WHIP, pit.G, pit.IP, pit.SO9, COUNT(Country) OVER (PARTITION BY Country) AS NumberFromCountry
+FROM rays2022teampitching pit
+	JOIN rays2022positions pos
+	ON pit.FirstName = pos.FirstName AND pit.LastName = pos.LastName
+  
+WITH CTE_Pitchers AS
+(SELECT pit.FirstName, pit.LastName, pos.Country, pit.Age, pit.ERA, pit.FIP, pit.WHIP, pit.G, pit.IP, pit.SO9, COUNT(Country) OVER (PARTITION BY Country) AS NumberFromCountry
+FROM rays2022teampitching pit
+	JOIN rays2022positions pos
+	ON pit.FirstName = pos.FirstName AND pit.LastName = pos.LastName
+)
+SELECT *
+FROM CTE_Pitchers
+
+/* drawing from CTE, ordering pitchers by top 7 ERA, filtering out pitchers who did not pitch enough innings to have a legitimate grasp on actual/expected stats (10 inn) */
+WITH CTE_Pitchers AS
+(SELECT pit.FirstName, pit.LastName, pos.Country, pit.Age, pit.ERA, pit.FIP, pit.WHIP, pit.G, pit.IP, pit.SO9, COUNT(Country) OVER (PARTITION BY Country) AS NumberFromCountry
+FROM rays2022teampitching pit
+	JOIN rays2022positions pos
+	ON pit.FirstName = pos.FirstName AND pit.LastName = pos.LastName
+) 
+SELECT FirstName, LastName, Country, Age, IP, ERA, FIP
+FROM CTE_Pitchers
+WHERE IP > 10
+ORDER BY ERA
+LIMIT 7
+
+/* using CTE, determining the overperformers based on expected stat(FIP) -- showing pitchers with relevant innings(>10) that had more than a 1 point difference between ERA and FIP */
+WITH CTE_Pitchers AS
+(SELECT pit.FirstName, pit.LastName, pos.Country, pit.Age, pit.ERA, pit.FIP, pit.WHIP, pit.G, pit.IP, pit.SO9, COUNT(Country) OVER (PARTITION BY Country) AS NumberFromCountry
+FROM rays2022teampitching pit
+	JOIN rays2022positions pos
+	ON pit.FirstName = pos.FirstName AND pit.LastName = pos.LastName
+) 
+SELECT FirstName, LastName, Age, IP, ERA, FIP, ROUND((FIP-ERA),3) AS Discrepancy
+FROM CTE_Pitchers
+WHERE (FIP - ERA) > 1 AND IP > 10
+ORDER BY Discrepancy
+
+------------
+
+temp tables
+
+------------
+
+/* creating temp table to show basic player info + how they were acquired by joining another table in */
+CREATE TEMPORARY TABLE temp_pitcher (
+FirstName VARCHAR(100),
+LastName VARCHAR(100),
+Age INT,
+ERA DOUBLE,
+FIP DOUBLE,
+Acquired VARCHAR(100)
+)
+
+/* inserting minor leaguer Taj Bradley into major league group (minors does not track FIP, so subsituted the value for 0) */
+INSERT INTO temp_pitcher VALUES (
+'Taj', 'Bradley', '21', '2.57', '0.00', 'Amateur Draft'
+)
+
+INSERT INTO temp_pitcher
+SELECT pit.FirstName, pit.LastName, pit.Age, pit.ERA, pit.FIP, pval.Acquired
+FROM rays2022teampitching pit
+	JOIN rays2022pitchervalues pval
+		ON pit.FirstName = pval.FirstName AND pit.LastName = pval.LastName
+
