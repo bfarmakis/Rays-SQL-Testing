@@ -1,0 +1,17 @@
+/* looking at table data, cutting out the irrelevant data */
+SELECT *
+FROM rayspitchinghistory
+
+/* CTE example */
+
+WITH cte_pit AS 
+(SELECT Year, W, L, RAG, ERA, G, SV, IP, H, R, ER, HR, BB, SO, WHIP, SO9, HR9, AvgAge, Pcoach
+FROM rayspitchinghistory
+)
+SELECT Year, W, L, RAG, ERA, G, SV, H, R, ER, HR, BB, SO, WHIP, SO9, HR9, AvgAge, Pcoach, (SV/G) * 100 AS PcSVpG
+FROM cte_pit
+
+/* simple example */
+
+SELECT Year, W, L, RAG, ERA, G, SV, H, R, ER, HR, BB, SO, WHIP, SO9, HR9, AvgAge, Pcoach, (SV/G) * 100 AS PcSVpG
+FROM rayspitchinghistory
